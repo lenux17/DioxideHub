@@ -1,25 +1,38 @@
-import React from "react";
+import React, { useEffect } from "react";
 import styled from "styled-components";
-import { withGoogleMap, GoogleMap, Marker } from "react-google-maps";
+import { Chart } from "react-google-charts";
 
 const Wrapper = styled.div`
   text-align: center;
 `;
-const MapWrapper = styled.div`
-  width: auto;
-  height: 100vh;
-`;
-
-const Map = withGoogleMap(props => (
-  <GoogleMap defaultZoom={8} defaultCenter={{ lat: -34.397, lng: 150.644 }}>
-    <Marker position={{ lat: -34.397, lng: 150.644 }} />
-  </GoogleMap>
-));
 
 const App: React.FC = () => {
+  useEffect(() => {
+    const fetchData = async () => {
+      const result = await fetch(
+        `https://api.airvisual.com/v2/city?city=Paris&state=Ile-de-France&country=France&key=${process.env.REACT_APP_AIR_VISUAL}`,
+        {
+          method: "GET",
+          redirect: "follow"
+        }
+      );
+
+      const resultText = await result.json();
+
+      console.log(resultText);
+    };
+
+    fetchData();
+  }, []);
+
   return (
     <Wrapper>
-      <Map containerElement={<MapWrapper />} mapElement={<MapWrapper />} />
+      <Chart
+        chartType="GeoChart"
+        data={[["Country"], ["Poland"]]}
+        width="100vw"
+        height="100vh"
+      />
     </Wrapper>
   );
 };
