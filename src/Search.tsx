@@ -18,7 +18,6 @@ export default function Search() {
 
   const handleSelect = async (value: any) => {
     const results = await geocodeByAddress(value);
-    console.log(results);
     const latLng = await getLatLng(results[0]);
     setAddress(value);
     setCoordinates(latLng);
