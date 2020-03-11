@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import PlacesAutocomplete, {
   geocodeByAddress,
   getLatLng
@@ -11,6 +11,7 @@ interface CoordinatesState {
 
 export default function Search() {
   const [address, setAddress] = React.useState("");
+  const [pollutionData, setPollutionData] = React.useState(null);
   const [coordinates, setCoordinates] = React.useState<CoordinatesState>({
     lat: null,
     lng: null
@@ -22,6 +23,35 @@ export default function Search() {
     setAddress(value);
     setCoordinates(latLng);
   };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        if (coordinates.lat === null || coordinates.lng === null) {
+          return;
+        }
+
+        const result = await fetch(
+          `https://api.airvisual.com/v2/nearest_city?lat=${coordinates.lat.toFixed(
+            2
+          )}&lon=${coordinates.lng.toFixed(2)}&key=${
+            process.env.REACT_APP_AIR_VISUAL
+          }`,
+          {
+            method: "GET",
+            redirect: "follow"
+          }
+        );
+
+        const response = await result.json();
+        setPollutionData(response);
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
+    fetchData();
+  }, [coordinates]);
 
   return (
     <div>
