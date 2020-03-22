@@ -1,8 +1,15 @@
 import React, { useEffect } from "react";
+import styled from "styled-components";
 import PlacesAutocomplete, {
   geocodeByAddress,
   getLatLng
 } from "react-places-autocomplete";
+import { withGoogleMap, GoogleMap, Marker } from "react-google-maps";
+
+const MapWrapper = styled.div`
+  width: auto;
+  height: 100vh;
+`;
 
 interface CoordinatesState {
   lat: number | null;
@@ -53,6 +60,19 @@ export default function Search() {
     fetchData();
   }, [coordinates]);
 
+  const Map = withGoogleMap(props => (
+    <GoogleMap
+      defaultZoom={2.5}
+      defaultCenter={{ lat: 0, lng: 0 }}
+      center={{ lat: coordinates.lat || 0, lng: coordinates.lng || 0 }}
+      zoom={coordinates.lat && coordinates.lng ? 7 : 2.5}
+    >
+      {coordinates.lat && coordinates.lng && (
+        <Marker position={{ lat: coordinates.lat, lng: coordinates.lng }} />
+      )}
+    </GoogleMap>
+  ));
+
   return (
     <div>
       <PlacesAutocomplete
@@ -64,8 +84,13 @@ export default function Search() {
           <div>
             <p>Latitude: {coordinates.lat}</p>
             <p>Longitude: {coordinates.lng}</p>
-
             <input {...getInputProps({ placeholder: "Type adress" })} />
+
+            {coordinates.lat && coordinates.lng ? (
+              <div>map ...</div>
+            ) : (
+              <div> map ... without marker</div>
+            )}
 
             <div>
               {loading ? <div>...loading</div> : null}
@@ -82,6 +107,10 @@ export default function Search() {
                 );
               })}
             </div>
+            <Map
+              containerElement={<MapWrapper />}
+              mapElement={<MapWrapper />}
+            />
           </div>
         )}
       </PlacesAutocomplete>
