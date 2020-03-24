@@ -14,7 +14,7 @@
     "@types/styled-components": "^4.4.2",
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
-    "react-google-charts": "^3.0.15",
+    "react-google-maps": "^9.4.5",
     "react-places-autocomplete": "^7.2.1",
     "react-scripts": "3.3.0",
     "styled-components": "^5.0.0",
