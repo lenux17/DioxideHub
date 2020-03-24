@@ -1,6 +1,5 @@
-import React, { useEffect } from "react";
+import React from "react";
 import styled from "styled-components";
-import { withGoogleMap, GoogleMap, Marker } from "react-google-maps";
 import Search from "./Search";
 
 const Wrapper = styled.div`

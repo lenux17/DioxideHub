@@ -86,12 +86,6 @@ export default function Search() {
             <p>Longitude: {coordinates.lng}</p>
             <input {...getInputProps({ placeholder: "Type adress" })} />
 
-            {coordinates.lat && coordinates.lng ? (
-              <div>map ...</div>
-            ) : (
-              <div> map ... without marker</div>
-            )}
-
             <div>
               {loading ? <div>...loading</div> : null}
 
