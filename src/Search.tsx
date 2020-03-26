@@ -10,8 +10,9 @@ const MapWrapper = styled.div`
   width: auto;
   height: 100vh;
 `;
-const Index = styled.div<{ aqius: string }>`
+const Index = styled.div<{ aqius?: string }>`
   background-color: ${({ aqius }) => {
+    if (!aqius) return "white";
     const numberAqius = parseInt(aqius, 10);
     return numberAqius < 50
       ? "green"
@@ -25,7 +26,7 @@ const Index = styled.div<{ aqius: string }>`
       ? "mediumorchid"
       : numberAqius < 500
       ? "maroon"
-      : null;
+      : "white";
   }};
 `;
 
@@ -36,7 +37,9 @@ interface CoordinatesState {
 
 export default function Search() {
   const [address, setAddress] = React.useState("");
-  const [pollutionData, setPollutionData] = React.useState<any>(null);
+  const [pollutionData, setPollutionData] = React.useState<{
+    data?: { city: string; current?: { pollution: { aqius: string } } };
+  } | null>(null);
   const [coordinates, setCoordinates] = React.useState<CoordinatesState>({
     lat: null,
     lng: null
