@@ -10,6 +10,25 @@ const MapWrapper = styled.div`
   width: auto;
   height: 100vh;
 `;
+const Index = styled.div<{ aqius?: string }>`
+  background-color: ${({ aqius }) => {
+    if (!aqius) return "white";
+    const numberAqius = parseInt(aqius, 10);
+    return numberAqius < 50
+      ? "green"
+      : numberAqius < 100
+      ? "yellow"
+      : numberAqius < 150
+      ? "orange"
+      : numberAqius < 200
+      ? "red"
+      : numberAqius < 300
+      ? "mediumorchid"
+      : numberAqius < 500
+      ? "maroon"
+      : "white";
+  }};
+`;
 
 interface CoordinatesState {
   lat: number | null;
@@ -18,7 +37,9 @@ interface CoordinatesState {
 
 export default function Search() {
   const [address, setAddress] = React.useState("");
-  const [pollutionData, setPollutionData] = React.useState(null);
+  const [pollutionData, setPollutionData] = React.useState<{
+    data?: { city: string; current?: { pollution: { aqius: string } } };
+  } | null>(null);
   const [coordinates, setCoordinates] = React.useState<CoordinatesState>({
     lat: null,
     lng: null
@@ -101,6 +122,14 @@ export default function Search() {
                 );
               })}
             </div>
+
+            <Index aqius={pollutionData?.data?.current?.pollution?.aqius}>
+              <p>City: {pollutionData?.data?.city}</p>
+              <p>
+                AQI quality:{" "}
+                {pollutionData && pollutionData.data?.current?.pollution?.aqius}
+              </p>
+            </Index>
             <Map
               containerElement={<MapWrapper />}
               mapElement={<MapWrapper />}
