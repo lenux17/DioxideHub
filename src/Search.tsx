@@ -23,13 +23,19 @@ const Index = styled.div<{ aqius?: string }>`
       : numberAqius < 200
       ? "red"
       : numberAqius < 300
-      ? "mediumorchid"
+      ? "purple"
       : numberAqius < 500
       ? "maroon"
       : "white";
   }};
 `;
-
+const Conditions = styled.div`
+ background: linear-gradient(to right, green, yellow, orange, red, purple, maroon );
+ p {
+   display: inline;
+  padding: 0 120px;
+ }
+`
 interface CoordinatesState {
   lat: number | null;
   lng: number | null;
@@ -38,12 +44,21 @@ interface CoordinatesState {
 export default function Search() {
   const [address, setAddress] = React.useState("");
   const [pollutionData, setPollutionData] = React.useState<{
-    data?: { city: string; current?: { pollution: { aqius: string } } };
+    data?: {
+      city: string;
+      current?: { pollution: { aqius: string; ts: string } };
+    };
   } | null>(null);
   const [coordinates, setCoordinates] = React.useState<CoordinatesState>({
     lat: null,
     lng: null
   });
+
+  const formatedData =  pollutionData?.data?.current?.pollution?.ts ? new Date(
+    pollutionData?.data?.current?.pollution?.ts 
+  ).toLocaleString("en-GB", { timeZone: "UTC" }) : "";
+
+ 
 
   const handleSelect = async (value: any) => {
     const results = await geocodeByAddress(value);
@@ -129,7 +144,16 @@ export default function Search() {
                 AQI quality:{" "}
                 {pollutionData && pollutionData.data?.current?.pollution?.aqius}
               </p>
+              <p>Time: {formatedData}</p>
             </Index>
+            <Conditions>
+            <p title="Good"></p> 
+            <p title="Moderate"></p> 
+            <p title="Unhealthy for Sensitive Groups"></p> 
+            <p title="Unhealthy"></p> 
+            <p title="Very Unhealthy"></p> 
+            <p title="Hazardous"></p> 
+          </Conditions>
             <Map
               containerElement={<MapWrapper />}
               mapElement={<MapWrapper />}
