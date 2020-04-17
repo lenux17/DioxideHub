@@ -49,22 +49,29 @@ interface CoordinatesState {
   lng: number | null;
 }
 
+interface AirVisualPollution {
+  data?: {
+    city: string;
+    current?: { pollution: { aqius: string; ts: string } };
+  };
+}
+
+interface OpenStreetMapResponseObject {
+  geojson: {
+    type: string;
+    coordinates: Array<Array<[number, number]>>;
+  };
+}
+
+type OpenStreetMapResponse = OpenStreetMapResponseObject[];
+
 export default function Search() {
   const [address, setAddress] = React.useState("");
-  const [highlight, setHighlight] = React.useState<
-    {
-      geojson: {
-        type: string;
-        coordinates: Array<Array<[number, number]>>;
-      };
-    }[]
-  >([]);
-  const [pollutionData, setPollutionData] = React.useState<{
-    data?: {
-      city: string;
-      current?: { pollution: { aqius: string; ts: string } };
-    };
-  } | null>(null);
+  const [highlight, setHighlight] = React.useState<OpenStreetMapResponse>([]);
+  const [
+    pollutionData,
+    setPollutionData,
+  ] = React.useState<AirVisualPollution | null>(null);
   const [coordinates, setCoordinates] = React.useState<CoordinatesState>({
     lat: null,
     lng: null,
@@ -106,7 +113,7 @@ export default function Search() {
   };
 
   useEffect(() => {
-    const addressData = async () => {
+    const fetchPolygonData = async () => {
       try {
         if (coordinates.lat === null || coordinates.lng === null || !address) {
           return;
@@ -122,11 +129,11 @@ export default function Search() {
         console.error(e);
       }
     };
-    addressData();
+    fetchPolygonData();
   }, [coordinates]);
 
   useEffect(() => {
-    const visualData = async () => {
+    const fetchAirVisual = async () => {
       try {
         if (coordinates.lat === null || coordinates.lng === null) {
           return;
@@ -151,7 +158,7 @@ export default function Search() {
       }
     };
 
-    visualData();
+    fetchAirVisual();
   }, [coordinates]);
 
   const Map = withGoogleMap((props) => (
@@ -176,10 +183,10 @@ export default function Search() {
         },
       }}
       defaultZoom={2.8}
-      defaultCenter={{ lat: 43.7101728, lng: 7.261953200000001 }}
+      defaultCenter={{ lat: 43.71, lng: 7.26 }}
       center={{
-        lat: coordinates.lat || 36.068909,
-        lng: coordinates.lng || 14.2018098,
+        lat: coordinates.lat || 43.71,
+        lng: coordinates.lng || 7.26,
       }}
       zoom={coordinates.lat && coordinates.lng ? 11 : 2.8}
     >
