@@ -2,9 +2,9 @@ import React, { useEffect } from "react";
 import styled from "styled-components";
 import PlacesAutocomplete, {
   geocodeByAddress,
-  getLatLng
+  getLatLng,
 } from "react-places-autocomplete";
-import { withGoogleMap, GoogleMap, Marker } from "react-google-maps";
+import { withGoogleMap, GoogleMap, Marker, Polygon } from "react-google-maps";
 
 const MapWrapper = styled.div`
   width: auto;
@@ -30,12 +30,20 @@ const Index = styled.div<{ aqius?: string }>`
   }};
 `;
 const Conditions = styled.div`
- background: linear-gradient(to right, green, yellow, orange, red, purple, maroon );
- p {
-   display: inline;
-  padding: 0 120px;
- }
-`
+  background: linear-gradient(
+    to right,
+    green,
+    yellow,
+    orange,
+    red,
+    purple,
+    maroon
+  );
+  p {
+    display: inline;
+    padding: 0 120px;
+  }
+`;
 interface CoordinatesState {
   lat: number | null;
   lng: number | null;
@@ -43,6 +51,14 @@ interface CoordinatesState {
 
 export default function Search() {
   const [address, setAddress] = React.useState("");
+  const [highlight, setHighlight] = React.useState<
+    {
+      geojson: {
+        type: string;
+        coordinates: Array<Array<[number, number]>>;
+      };
+    }[]
+  >([]);
   const [pollutionData, setPollutionData] = React.useState<{
     data?: {
       city: string;
@@ -51,14 +67,14 @@ export default function Search() {
   } | null>(null);
   const [coordinates, setCoordinates] = React.useState<CoordinatesState>({
     lat: null,
-    lng: null
+    lng: null,
   });
 
-  const formatedData =  pollutionData?.data?.current?.pollution?.ts ? new Date(
-    pollutionData?.data?.current?.pollution?.ts 
-  ).toLocaleString("en-GB", { timeZone: "UTC" }) : "";
-
- 
+  const formatedData = pollutionData?.data?.current?.pollution?.ts
+    ? new Date(
+        pollutionData?.data?.current?.pollution?.ts
+      ).toLocaleString("en-GB", { timeZone: "UTC" })
+    : "";
 
   const handleSelect = async (value: any) => {
     const results = await geocodeByAddress(value);
@@ -67,8 +83,50 @@ export default function Search() {
     setCoordinates(latLng);
   };
 
+  const region = () => {
+    const polygon = highlight.find(
+      (element) => element.geojson.type === "Polygon"
+    );
+    if (!polygon) return null;
+    const coordArr = polygon.geojson.coordinates[0].map((data) => ({
+      lat: data[1],
+      lng: data[0],
+    }));
+
+    return (
+      <Polygon
+        path={coordArr}
+        options={{
+          strokeColor: "#fc1e0d",
+          strokeOpacity: 1,
+          strokeWeight: 2,
+        }}
+      />
+    );
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
+    const addressData = async () => {
+      try {
+        if (coordinates.lat === null || coordinates.lng === null || !address) {
+          return;
+        }
+
+        const result = await fetch(
+          `https://nominatim.openstreetmap.org/search.php?q=${address}&polygon_geojson=1&format=json`
+        );
+        const response = await result.json();
+
+        setHighlight(response);
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    addressData();
+  }, [coordinates]);
+
+  useEffect(() => {
+    const visualData = async () => {
       try {
         if (coordinates.lat === null || coordinates.lng === null) {
           return;
@@ -82,7 +140,7 @@ export default function Search() {
           }`,
           {
             method: "GET",
-            redirect: "follow"
+            redirect: "follow",
           }
         );
 
@@ -93,16 +151,39 @@ export default function Search() {
       }
     };
 
-    fetchData();
+    visualData();
   }, [coordinates]);
 
-  const Map = withGoogleMap(props => (
+  const Map = withGoogleMap((props) => (
     <GoogleMap
-      defaultZoom={2.5}
-      defaultCenter={{ lat: 0, lng: 0 }}
-      center={{ lat: coordinates.lat || 0, lng: coordinates.lng || 0 }}
-      zoom={coordinates.lat && coordinates.lng ? 7 : 2.5}
+      options={{
+        gestureHandling: "greedy",
+        streetViewControl: false,
+        clickableIcons: false,
+        minZoom: 2.8,
+        fullscreenControl: false,
+        zoomControl: false,
+        mapTypeControl: false,
+        scaleControl: false,
+        rotateControl: false,
+        restriction: {
+          latLngBounds: {
+            north: 85,
+            south: -85,
+            west: -180,
+            east: 180,
+          },
+        },
+      }}
+      defaultZoom={2.8}
+      defaultCenter={{ lat: 43.7101728, lng: 7.261953200000001 }}
+      center={{
+        lat: coordinates.lat || 36.068909,
+        lng: coordinates.lng || 14.2018098,
+      }}
+      zoom={coordinates.lat && coordinates.lng ? 11 : 2.8}
     >
+      {highlight.length > 1 && region()}
       {coordinates.lat && coordinates.lng && (
         <Marker position={{ lat: coordinates.lat, lng: coordinates.lng }} />
       )}
@@ -112,6 +193,7 @@ export default function Search() {
   return (
     <div>
       <PlacesAutocomplete
+        searchOptions={{ types: ["(cities)"] }}
         value={address}
         onChange={setAddress}
         onSelect={handleSelect}
@@ -120,14 +202,14 @@ export default function Search() {
           <div>
             <p>Latitude: {coordinates.lat}</p>
             <p>Longitude: {coordinates.lng}</p>
-            <input {...getInputProps({ placeholder: "Type adress" })} />
+            <input {...getInputProps({ placeholder: "Type address" })} />
 
             <div>
               {loading ? <div>...loading</div> : null}
 
-              {suggestions.map(suggestion => {
+              {suggestions.map((suggestion) => {
                 const style = {
-                  backgroundColor: suggestion.active ? "#41b6e6" : "#fff"
+                  backgroundColor: suggestion.active ? "#41b6e6" : "#fff",
                 };
 
                 return (
@@ -137,30 +219,26 @@ export default function Search() {
                 );
               })}
             </div>
-
-            <Index aqius={pollutionData?.data?.current?.pollution?.aqius}>
-              <p>City: {pollutionData?.data?.city}</p>
-              <p>
-                AQI quality:{" "}
-                {pollutionData && pollutionData.data?.current?.pollution?.aqius}
-              </p>
-              <p>Time: {formatedData}</p>
-            </Index>
-            <Conditions>
-            <p title="Good"></p> 
-            <p title="Moderate"></p> 
-            <p title="Unhealthy for Sensitive Groups"></p> 
-            <p title="Unhealthy"></p> 
-            <p title="Very Unhealthy"></p> 
-            <p title="Hazardous"></p> 
-          </Conditions>
-            <Map
-              containerElement={<MapWrapper />}
-              mapElement={<MapWrapper />}
-            />
           </div>
         )}
       </PlacesAutocomplete>
+      <Index aqius={pollutionData?.data?.current?.pollution?.aqius}>
+        <p>City: {pollutionData?.data?.city}</p>
+        <p>
+          AQI quality:{" "}
+          {pollutionData && pollutionData.data?.current?.pollution?.aqius}
+        </p>
+        <p>Time: {formatedData}</p>
+      </Index>
+      <Conditions>
+        <p title="Good"></p>
+        <p title="Moderate"></p>
+        <p title="Unhealthy for Sensitive Groups"></p>
+        <p title="Unhealthy"></p>
+        <p title="Very Unhealthy"></p>
+        <p title="Hazardous"></p>
+      </Conditions>
+      <Map containerElement={<MapWrapper />} mapElement={<MapWrapper />}></Map>
     </div>
   );
 }
