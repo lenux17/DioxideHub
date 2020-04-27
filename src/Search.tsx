@@ -28,22 +28,57 @@ const Index = styled.div<{ aqius?: string }>`
       ? "maroon"
       : "white";
   }};
+  position: absolute;
+  z-index: 5;
+  width: 15rem;
+  left: 4rem;
+  top: 25rem;
+  border-radius: 10px;
 `;
 const Conditions = styled.div`
   background: linear-gradient(
-    to right,
-    green,
-    yellow,
-    orange,
-    red,
-    purple,
-    maroon
+    to bottom,
+    rgba(0, 128, 0, 60%),
+    rgba(255, 255, 0, 60%),
+    rgba(255, 165, 0, 80%),
+    rgba(255, 0, 0, 60%),
+    rgba(128, 0, 128, 60%),
+    rgba(128, 0, 0, 80%)
   );
+  position: absolute;
+  z-index: 5;
+  height: 45rem;
+  left: 88rem;
+  box-shadow: 0 0 15px;
   p {
-    display: inline;
-    padding: 0 120px;
+    padding: 40px 0px 17px 0px;
+    font-size: 15px;
+    font-weight: 500;
   }
 `;
+
+const StyledSearchWrapper = styled.div`
+  position: absolute;
+  z-index: 5;
+  top: 4rem;
+  left: 4rem;
+  input {
+    padding: 7px 20px 7px 20px;
+    border-radius: 20px;
+    border: 1px solid;
+    font-size: 1rem;
+  }
+`;
+
+const Frame = styled.div`
+  position: absolute;
+  z-index: 5;
+  background: rgba(179, 179, 179, 50%);
+  width: 23rem;
+  height: 45rem;
+  box-shadow: 0 0 15px;
+`;
+
 interface CoordinatesState {
   lat: number | null;
   lng: number | null;
@@ -165,6 +200,7 @@ export default function Search() {
     <GoogleMap
       options={{
         gestureHandling: "greedy",
+        mapTypeId: "hybrid",
         streetViewControl: false,
         clickableIcons: false,
         minZoom: 2.8,
@@ -188,7 +224,7 @@ export default function Search() {
         lat: coordinates.lat || 43.71,
         lng: coordinates.lng || 7.26,
       }}
-      zoom={coordinates.lat && coordinates.lng ? 11 : 2.8}
+      zoom={coordinates.lat && coordinates.lng ? 10 : 2.6}
     >
       {highlight.length > 1 && region()}
       {coordinates.lat && coordinates.lng && (
@@ -199,6 +235,7 @@ export default function Search() {
 
   return (
     <div>
+      <Frame></Frame>
       <PlacesAutocomplete
         searchOptions={{ types: ["(cities)"] }}
         value={address}
@@ -206,9 +243,7 @@ export default function Search() {
         onSelect={handleSelect}
       >
         {({ getInputProps, suggestions, getSuggestionItemProps, loading }) => (
-          <div>
-            <p>Latitude: {coordinates.lat}</p>
-            <p>Longitude: {coordinates.lng}</p>
+          <StyledSearchWrapper>
             <input {...getInputProps({ placeholder: "Type address" })} />
 
             <div>
@@ -226,24 +261,26 @@ export default function Search() {
                 );
               })}
             </div>
-          </div>
+          </StyledSearchWrapper>
         )}
       </PlacesAutocomplete>
       <Index aqius={pollutionData?.data?.current?.pollution?.aqius}>
         <p>City: {pollutionData?.data?.city}</p>
         <p>
-          AQI quality:{" "}
+          US AQI:{" "}
           {pollutionData && pollutionData.data?.current?.pollution?.aqius}
         </p>
         <p>Time: {formatedData}</p>
       </Index>
       <Conditions>
-        <p title="Good"></p>
-        <p title="Moderate"></p>
-        <p title="Unhealthy for Sensitive Groups"></p>
-        <p title="Unhealthy"></p>
-        <p title="Very Unhealthy"></p>
-        <p title="Hazardous"></p>
+        <p title="Good">Good(0 to 50)</p>
+        <p title="Moderate">Moderate(51 to 100)</p>
+        <p title="Unhealthy for Sensitive Groups">
+          Unhealthy for Sensitive Groups(101 to 150)
+        </p>
+        <p title="Unhealthy">Unhealthy(151 to 200)</p>
+        <p title="Very Unhealthy">Very Unhealthy(201 to 300)</p>
+        <p title="Hazardous">Hazardous(301 and higher)</p>
       </Conditions>
       <Map containerElement={<MapWrapper />} mapElement={<MapWrapper />}></Map>
     </div>
