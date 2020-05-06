@@ -32,8 +32,12 @@ const Index = styled.div<{ aqius?: string }>`
   z-index: 5;
   width: 15rem;
   left: 4rem;
-  top: 25rem;
+  bottom: 10vh;
   border-radius: 10px;
+  @media (max-width: 500px) {
+    left: 1rem;
+    width: 12rem;
+  }
 `;
 const Conditions = styled.div`
   background: linear-gradient(
@@ -47,12 +51,15 @@ const Conditions = styled.div`
   );
   position: absolute;
   z-index: 5;
-  height: 45rem;
-  left: 88rem;
+  height: 100vh;
+  right: 0;
+  max-width: min-content;
   box-shadow: 0 0 15px;
   p {
-    padding: 40px 0px 17px 0px;
+    padding: 9vh 0 0 0;
     font-size: 15px;
+    height: 7vh;
+    margin: 0;
     font-weight: 500;
   }
 `;
@@ -67,6 +74,14 @@ const StyledSearchWrapper = styled.div`
     border-radius: 20px;
     border: 1px solid;
     font-size: 1rem;
+    @media (max-width: 400px) {
+      padding: 2vw;
+      font-size: 4.5vw;
+    }
+  }
+  @media (max-width: 500px) {
+    top: 8vh;
+    left: 7vw;
   }
 `;
 
@@ -75,9 +90,56 @@ const Frame = styled.div`
   z-index: 5;
   background: rgba(179, 179, 179, 50%);
   width: 23rem;
-  height: 45rem;
+  height: 100vh;
   box-shadow: 0 0 15px;
+  @media (max-width: 500px) {
+    background: none;
+    box-shadow: none;
+    width: 100%;
+  }
 `;
+
+const Map = withGoogleMap(
+  (props: {
+    children: React.ReactNode;
+    coordinates: {
+      lat: number | null;
+      lng: number | null;
+    };
+  }) => (
+    <GoogleMap
+      options={{
+        gestureHandling: "greedy",
+        mapTypeId: "hybrid",
+        streetViewControl: false,
+        clickableIcons: false,
+        minZoom: 2.8,
+        fullscreenControl: false,
+        zoomControl: false,
+        mapTypeControl: false,
+        scaleControl: false,
+        rotateControl: false,
+        restriction: {
+          latLngBounds: {
+            north: 85,
+            south: -85,
+            west: -180,
+            east: 180,
+          },
+        },
+      }}
+      defaultZoom={2.8}
+      defaultCenter={{ lat: 43.71, lng: 7.26 }}
+      center={{
+        lat: props.coordinates.lat || 43.71,
+        lng: props.coordinates.lng || 7.26,
+      }}
+      zoom={props.coordinates.lat && props.coordinates.lng ? 10 : 2.6}
+    >
+      {props.children}
+    </GoogleMap>
+  )
+);
 
 interface CoordinatesState {
   lat: number | null;
@@ -118,6 +180,10 @@ export default function Search() {
       ).toLocaleString("en-GB", { timeZone: "UTC" })
     : "";
 
+  const handleChange = (address: string) => {
+    setAddress(address);
+  };
+
   const handleSelect = async (value: any) => {
     const results = await geocodeByAddress(value);
     const latLng = await getLatLng(results[0]);
@@ -127,7 +193,8 @@ export default function Search() {
 
   const region = () => {
     const polygon = highlight.find(
-      (element) => element.geojson.type === "Polygon"
+      (element) =>
+        element && element.geojson && element.geojson.type === "Polygon"
     );
     if (!polygon) return null;
     const coordArr = polygon.geojson.coordinates[0].map((data) => ({
@@ -196,50 +263,13 @@ export default function Search() {
     fetchAirVisual();
   }, [coordinates]);
 
-  const Map = withGoogleMap((props) => (
-    <GoogleMap
-      options={{
-        gestureHandling: "greedy",
-        mapTypeId: "hybrid",
-        streetViewControl: false,
-        clickableIcons: false,
-        minZoom: 2.8,
-        fullscreenControl: false,
-        zoomControl: false,
-        mapTypeControl: false,
-        scaleControl: false,
-        rotateControl: false,
-        restriction: {
-          latLngBounds: {
-            north: 85,
-            south: -85,
-            west: -180,
-            east: 180,
-          },
-        },
-      }}
-      defaultZoom={2.8}
-      defaultCenter={{ lat: 43.71, lng: 7.26 }}
-      center={{
-        lat: coordinates.lat || 43.71,
-        lng: coordinates.lng || 7.26,
-      }}
-      zoom={coordinates.lat && coordinates.lng ? 10 : 2.6}
-    >
-      {highlight.length > 1 && region()}
-      {coordinates.lat && coordinates.lng && (
-        <Marker position={{ lat: coordinates.lat, lng: coordinates.lng }} />
-      )}
-    </GoogleMap>
-  ));
-
   return (
     <div>
       <Frame></Frame>
       <PlacesAutocomplete
         searchOptions={{ types: ["(cities)"] }}
         value={address}
-        onChange={setAddress}
+        onChange={handleChange}
         onSelect={handleSelect}
       >
         {({ getInputProps, suggestions, getSuggestionItemProps, loading }) => (
@@ -282,7 +312,16 @@ export default function Search() {
         <p title="Very Unhealthy">Very Unhealthy(201 to 300)</p>
         <p title="Hazardous">Hazardous(301 and higher)</p>
       </Conditions>
-      <Map containerElement={<MapWrapper />} mapElement={<MapWrapper />}></Map>
+      <Map
+        containerElement={<MapWrapper />}
+        mapElement={<MapWrapper />}
+        coordinates={coordinates}
+      >
+        {highlight.length > 1 && region()}
+        {coordinates.lat && coordinates.lng && (
+          <Marker position={{ lat: coordinates.lat, lng: coordinates.lng }} />
+        )}
+      </Map>
     </div>
   );
 }
