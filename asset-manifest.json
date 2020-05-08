@@ -1,0 +1,22 @@
+{
+  "files": {
+    "main.css": "/dioxidehub/static/css/main.5ecd60fb.chunk.css",
+    "main.js": "/dioxidehub/static/js/main.f7172d34.chunk.js",
+    "main.js.map": "/dioxidehub/static/js/main.f7172d34.chunk.js.map",
+    "runtime-main.js": "/dioxidehub/static/js/runtime-main.71d01493.js",
+    "runtime-main.js.map": "/dioxidehub/static/js/runtime-main.71d01493.js.map",
+    "static/js/2.7b103996.chunk.js": "/dioxidehub/static/js/2.7b103996.chunk.js",
+    "static/js/2.7b103996.chunk.js.map": "/dioxidehub/static/js/2.7b103996.chunk.js.map",
+    "index.html": "/dioxidehub/index.html",
+    "precache-manifest.7da1a0ca809b29c288c6d172aefe8ca8.js": "/dioxidehub/precache-manifest.7da1a0ca809b29c288c6d172aefe8ca8.js",
+    "service-worker.js": "/dioxidehub/service-worker.js",
+    "static/css/main.5ecd60fb.chunk.css.map": "/dioxidehub/static/css/main.5ecd60fb.chunk.css.map",
+    "static/js/2.7b103996.chunk.js.LICENSE": "/dioxidehub/static/js/2.7b103996.chunk.js.LICENSE"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.71d01493.js",
+    "static/js/2.7b103996.chunk.js",
+    "static/css/main.5ecd60fb.chunk.css",
+    "static/js/main.f7172d34.chunk.js"
+  ]
+}
